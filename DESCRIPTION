@@ -1,16 +1,20 @@
 Package: curriculum
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Routines for configuring and analyzing academic curricula.
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Rodney", "Dyer",
+      email = "rodney@dyerlab.com",
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: What license is it under?
+Description: This package contains analysis routines and data associated with 
+  quantifying the effectiveness of academic curricula and faculty.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.3
