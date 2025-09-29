@@ -66,7 +66,9 @@ If students must select a set number of credits from a list of courses or course
 
 
 ```{r}
-library(tidyverse)
+#| warnings: false
+#| messages: false
+suppressPackageStartupMessages(library(tidyverse))
 
 # List of courses with their assigned number of credits and course descriptions to be used as an example.
 example_courses <- read.csv("example_courses.csv")
