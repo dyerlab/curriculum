@@ -39,25 +39,30 @@ The “or” and “and” can be used in combination, if a student can choose b
 “CHEM101 & CHEZ101|PHYS101 & PHYZ101”
 **Instructions to code: weigh each sequence based on the summed number of credits assigned to each course in it, then weigh by 1 over the number of sequences in the list.**
 
-There can be combinations of single courses and multi-course sequences within a list of courses to choose from, examples:
-Select one course sequence from the following:
-- CLSE 101
-- EGRB 102 & EGRB 104
-- EGRB 101
-- EGMN 103 & EGMN190
+There can be combinations of single courses and multi-course sequences within a list of courses to choose from, examples: 
+
+Select one course sequence from the following:   
+- CLSE 101.  
+- EGRB 102 & EGRB 104.  
+- EGRB 101.  
+- EGMN 103 & EGMN190.  
+
 Would be represented as : 
 "CLSE101|EGRB102 & EGRB104|EGRE101|EGMN103 & EGMN190"
 
-Choose one of the following options:
-- Option A : CHEM 101 and CHEZ 101
-- Option B: PHYS 207
-- Option C: BIOL 151 and BIOZ 151
+Choose one of the following options:   
+- Option A : CHEM 101 and CHEZ 101.  
+- Option B: PHYS 207.  
+- Option C: BIOL 151 and BIOZ 151.  
+
 Would be represented as: 
 “CHEM101 & CHEZ101|PHYS207|BIOL151 & BIOZ151”
 **Instructions to code: the single courses get a weight based on their assigned credits, the sequences get a weight based on the summed credits for all courses in the sequence, then each of those is divided by 1 over the number of weights in the group (which is a combination of both single courses and multi-course sequences).**
 
 If students must choose a set number of courses, like “pick 3 courses,” from a list of courses or course sequences, then each course or course sequence is separated by the number of courses that must be chosen enclosed in square brackets, like this: 
+
 “CHEM101[3]CHEM102[3]PHYS101[3]MATH402[3]ENGL101”
+
 **Instructions to code: weigh each course or course sequence based on the assigned number of credits, then find all possible combinations of 3 courses without repeating and the weights of each combination, then weigh the total by 1 over the number of possible combinations that there are.**
 
 If students must select a set number of credits from a list of courses or course sequences, then each course or course sequence is separated by the number of credits that must be chosen plus the letters “cred” enclosed in square brackets, like this:

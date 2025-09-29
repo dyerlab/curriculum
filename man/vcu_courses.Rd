@@ -6,7 +6,7 @@
 \title{VCU Course Bulletin}
 \format{
 this is a [data.frame] with 2863 rows and 6 variables:
-\describe {
+\describe{
   \item{code}{The internal designation for the class (e.g., 'BIOL 101').}
   \item{title}{The official course title.}
   \item{credits}{The number of credits that the university gives for this course.}

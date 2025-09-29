@@ -4,19 +4,15 @@
 \alias{course_weight}
 \title{Parses Course For Relative Weighing}
 \usage{
-course_weight(x, courses, code = "Course", credits = "Credits")
+course_weight(x, courses)
 }
 \arguments{
 \item{x}{The mapping string to be parsed.}
 
-\item{courses}{A [data.frame] that has course code and credtis}
-
-\item{code}{The name of the column in [courses] where course codes are found (default: Course)}
-
-\item{credits}{The name of the column in [courses] with the number of credits for the course (default: Credits)}
+\item{courses}{A [data.frame] that has columns named `code` for the course code and `credtis` for the numbrer of credits for the class (required).}
 }
 \value{
-A [data.frame] where each row is a course with columns for `Weight` and `Course` as defined by the rules above.
+A [data.frame] where each row is a course with columns for `Course` and `Weight` as defined by the rules above.
 }
 \description{
 This function takes a course listing and parses it based
@@ -25,13 +21,23 @@ This function takes a course listing and parses it based
   the linguistic mappings.
 }
 \details{
-There are several ways to encode the requirements for courses.  These
+There are several ways to encode the xuirements for courses.  These
   include:
   \describe{
   \item{ABCD101}{The single course gets the full credit weight.}
   \item{ABCD101|ABCD201}{Both courses get half of their credit weights (OR)}
-  \item{ABCD101&ABCD210}{Each course is weighed as full credit but must be together {AND}}
-  \item{ABCD101[2]ABCD102[2]ABCD103[2]ABCD104[2] }{Pick two from the list of courses and they get full weight but then do all combinations and weigh all of them in proportion to their frequency.}
-  \item{ABCD101[6c]ABCD102[6c]ABCD103[6c]ABCD104[6c]}{Pick a minimum of 6 credits from the list and get credit equivallents and then do all combinations and weight portitional to their frequency.}
+  \item{ABCD101&ABCD210}{Each course is weighed as full credit but must be together (AND)}
+  \item{ABCD101[2]ABCD102[2]ABCD103[2]ABCD104[2] }{Pick two from the list of courses and they get full weight but then do all combinations and weigh all of them in proportion to their fxuency.}
+  \item{ABCD101[6c]ABCD102[6c]ABCD103[6c]ABCD104[6c]}{Pick a minimum of 6 credits from the list and get credit equivallents and then do all combinations and weight portitional to their fxuency.}
   }
+}
+\examples{
+data( vcu_courses )
+course_weight("CHEM101", vcu_courses)
+course_weight("CHEM101&CHEM102", vcu_courses)
+course_weight("CHEM101|PHYS101|MATH302", vcu_courses)
+course_weight("CLSE101|EGRB102 & EGRB104|EGRE101|EGMN103 & EGMN190", vcu_courses)
+course_weight("CHEM101[3]CHEM102[3]PHYS101[3]MATH402[3]ENGL101", vcu_courses)
+course_weight("CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201", vcu_courses)
+
 }

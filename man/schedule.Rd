@@ -6,7 +6,7 @@
 \title{Semester schedule}
 \format{
 This is a [data.frame] with 69 rows and 35 variables:
-\describe {
+\describe{
  \item{Term}{The year and semester code.}
  \item{Code}{The course id number including the academic program abbreviation and the course number (e.g., 'BIOL 101')}
  \item{Title}{The officieal course title}

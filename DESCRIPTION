@@ -1,6 +1,6 @@
 Package: curriculum
 Type: Package
-Title: Routines for configuring and analyzing academic curricula.
+Title: Routines for configuring and analyzing academic curricula
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -10,8 +10,8 @@ Authors@R: c(
     ),
     person(
     "Candice", "Weber",
-    email = "",
-    role = "aut"*
+    email = "cweber@vcu.edu",
+    role = "aut"
     )
   )
 Description: This package contains analysis routines and data associated with 
@@ -21,6 +21,8 @@ Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat (>= 3.0.0)
+Imports:
+  stringr
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 Depends: 

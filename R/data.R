@@ -6,7 +6,7 @@
 #'   were parsed from the raw PDF.
 #'
 #' @format this is a [data.frame] with 2863 rows and 6 variables:
-#' \describe {
+#' \describe{
 #'   \item{code}{The internal designation for the class (e.g., 'BIOL 101').}
 #'   \item{title}{The official course title.}
 #'   \item{credits}{The number of credits that the university gives for this course.}
@@ -23,7 +23,7 @@
 #'   names of the courses, their titles, instructors, and meeting locations.
 #'
 #' @format This is a [data.frame] with 69 rows and 35 variables:
-#' \describe {
+#' \describe{
 #'  \item{Term}{The year and semester code.}
 #'  \item{Code}{The course id number including the academic program abbreviation and the course number (e.g., 'BIOL 101')}
 #'  \item{Title}{The officieal course title}
