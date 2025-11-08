@@ -18,25 +18,15 @@
 #' encoding <- "CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201"
 #' weights_select_n_credits(encoding, vcu_courses)
 #' weights_select_n_credits(encoding, vcu_courses, max_enum=3)
+
+
 weights_select_n_credits <- function(x, courses,
                                      max_enum = 15,
                                      trials = 100000,
                                      seed = NULL) {
-
-  # Bail on bad data
-  if (!all(c("code", "credits") %in% names(courses)))
+  if (!all(c("code", "credits") %in% names(courses))) {
     stop("courses must have columns 'code' and 'credits'")
-
-  # Parse N and course codes
-  N <- as.numeric(gsub("[^0-9]", "", regmatches(x, regexpr("\\[[0-9]+cred\\]", x))))
-  if (length(N) == 0 || is.na(N))
-    stop("Encoded string must include [Ncred].")
-
-  course_codes <- unlist(strsplit(x, "\\[[0-9]+cred\\]"))
-  course_codes <- course_codes[course_codes != ""]
-
-
-  #Some Helper Functions
+  }
 
   .is_minimal <- function(set_idx, credits, N) {
     total <- sum(credits[set_idx])
@@ -50,11 +40,10 @@ weights_select_n_credits <- function(x, courses,
   .minimal_sets_exact <- function(credits, N) {
     k <- length(credits)
     out <- vector("list", 0L)
-    # enumerate by subset size (small → large)
     for (i in seq_len(k)) {
       cmb <- utils::combn(k, i, simplify = FALSE)
       for (set in cmb) {
-        if (.is_minimal(set, credits, N)) out[[length(out)+1L]] <- set
+        if (.is_minimal(set, credits, N)) out[[length(out) + 1L]] <- set
       }
     }
     out
@@ -63,10 +52,9 @@ weights_select_n_credits <- function(x, courses,
   .minimal_sets_mc_counts <- function(credits, N, trials, seed = NULL) {
     if (!is.null(seed)) set.seed(seed)
     k <- length(credits)
-    p <- min(1, N / sum(credits))  # target expected credits ~ N
+    p <- min(1, N / sum(credits))
 
     incl_counts <- numeric(k)
-    sizes <- integer(0L)
     valid_minimal <- 0L
 
     for (t in seq_len(trials)) {
@@ -75,69 +63,89 @@ weights_select_n_credits <- function(x, courses,
       tot <- sum(credits[inc])
       if (tot < N) next
       sel_idx <- which(inc)
-      # minimality: removing any one keeps sum < N
+      # minimality check
       drop_ok <- TRUE
       for (j in sel_idx) {
         if ((tot - credits[j]) >= N) { drop_ok <- FALSE; break }
       }
       if (!drop_ok) next
-
       valid_minimal <- valid_minimal + 1L
       incl_counts[inc] <- incl_counts[inc] + 1
-      sizes <- c(sizes, length(sel_idx))
     }
 
-    list(incl = incl_counts,
-         nsets = valid_minimal,
-         avg_size = if (valid_minimal > 0) mean(sizes) else 0)
+    list(incl = incl_counts, nsets = valid_minimal)
   }
 
+  # Parse N credits and course/group tokens
+  N <- as.numeric(gsub("[^0-9]", "", regmatches(x, regexpr("\\[[0-9]+cred\\]", x))))
+  if (length(N) == 0 || is.na(N))
+    stop("Encoded string must include [Ncred].")
 
+  # Split on [Ncred] and drop empties
+  tokens <- unlist(strsplit(x, "\\[[0-9]+cred\\]"))
+  tokens <- tokens[tokens != ""]
 
+  # Parse each token for &-joined groups
+  groups <- lapply(tokens, function(tok) strsplit(tok, "\\s*&\\s*")[[1]])
+  group_names <- sapply(groups, paste, collapse = "_&_")
 
-  idx <- match(course_codes, courses$code)
-  if (any(is.na(idx))) {
-    missing <- course_codes[is.na(idx)]
-    stop(paste("Courses not found in 'courses':", paste(missing, collapse = ", ")))
-  }
+  # Lookup credits for each course and sum within groups
+  group_credits <- sapply(groups, function(cs) {
+    idx <- match(cs, courses$code)
+    if (any(is.na(idx))) {
+      missing <- cs[is.na(idx)]
+      stop(paste("Courses not found in 'courses':", paste(missing, collapse = ", ")))
+    }
+    sum(courses$credits[idx])
+  })
+  names(group_credits) <- group_names
 
-  cr <- courses$credits[idx]
-  names(cr) <- course_codes
-  k <- length(course_codes)
-
+  k <- length(group_credits)
   if (!is.null(seed)) set.seed(seed)
 
-  # Exact enumeration (minimal sets only)
+  # CASE 1: Exact enumeration (small number of groups)
   if (k <= max_enum) {
-    mins <- .minimal_sets_exact(cr, N)
+    mins <- .minimal_sets_exact(group_credits, N)
     if (length(mins) == 0L) {
-      return(data.frame(Course = course_codes, Weight = rep(0, k), row.names = NULL))
+      # return all 0 weights
+      expanded <- unlist(groups)
+      return(data.frame(Course = expanded, Weight = rep(0, length(expanded)), row.names = NULL))
     }
 
     counts <- numeric(k)
-    for (i in seq_along(mins)) {
-      counts[mins[[i]]] <- counts[mins[[i]]] + 1
-    }
+    for (i in seq_along(mins)) counts[mins[[i]]] <- counts[mins[[i]]] + 1
+    weights_group <- counts / length(mins)
+    names(weights_group) <- group_names
 
-    # per-course inclusion frequency over minimal sets
-    weights <- counts / length(mins)
+    # Expand group weights back to courses
+    expanded <- do.call(rbind, lapply(seq_along(groups), function(i) {
+      data.frame(
+        Course = groups[[i]],
+        Weight = rep(weights_group[i], length(groups[[i]])), row.names = NULL
+      )
+    }))
 
-    # ensure names and return as data.frame
-    names(weights) <- course_codes
-    return(data.frame(Course = course_codes,
-                      Weight = as.numeric(weights),
-                      row.names = NULL))
+    return(expanded)
   }
 
-  # Monte Carlo fallback (minimal sets only)
-  mc <- .minimal_sets_mc_counts(cr, N, trials, seed)
+
+  # CASE 2: Monte Carlo approximation (large number of groups)
+  mc <- .minimal_sets_mc_counts(group_credits, N, trials, seed)
   if (mc$nsets == 0L) {
-    return(data.frame(Course = course_codes, Weight = rep(0, k), row.names = NULL))
+    expanded <- unlist(groups)
+    return( data.frame( Course = as.character(expanded), Weight = as.numeric(rep(0, length(expanded))), row.names = NULL))
   }
-  weights <- mc$incl / mc$nsets
-  names(weights) <- course_codes
 
-  data.frame(Course = course_codes,
-             Weight = as.numeric(weights),
-             row.names = NULL)
+  weights_group <- mc$incl / mc$nsets
+  names(weights_group) <- group_names
+
+  # Expand group weights to individual courses
+  expanded <- do.call(rbind, lapply(seq_along(groups), function(i) {
+    data.frame(
+      Course = as.character(groups[[i]]),
+      Weight = as.numeric(rep(weights_group[i], length(groups[[i]]))), row.names = NULL
+    )
+  }))
+
+  return( expanded )
 }
