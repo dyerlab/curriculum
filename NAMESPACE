@@ -2,4 +2,5 @@
 
 export(course_weight)
 export(format_for_hm)
+export(weights_select_n_credits)
 importFrom(stringr,str_sub)

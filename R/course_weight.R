@@ -53,83 +53,8 @@ course_weight <- function( x, courses ) {
   `%||%` <- function(a, b) if (is.null(a)) b else a
 
   # A function that handles the most complicated option [Ncred]
-  .weights_select_n_credits <- function(s, courses) {
-
-    # parse target credits N. I'm going to assume that N is constant (please tell me no program has variable Ncredit in the same list...)
-    m <- regexpr("\\[([0-9]+)cred\\]", s, perl = TRUE)
-    if (m == -1) {
-      stop("No [Ncred] token found.")
-    }
-
-    N <- as.integer(sub(".*\\[([0-9]+)cred\\].*", "\\1", regmatches(s, m)[[1]]))
-    if (is.na(N) || N <= 0) {
-      stop("Invalid N in [Ncred].")
-    }
-
-    # extract course codes (e.g., ABCD123, CHEM101, MATH402, etc.)
-    codes <- regmatches(s, gregexpr("[A-Z]{2,}\\d{3,}", s, perl = TRUE))[[1]]
-    if (!length(codes)) {
-      stop("No course codes parsed from course string.")
-    }
-
-    # align codes with catalog credits
-    merge(
-      data.frame(code = codes, stringsAsFactors = FALSE),
-      courses[, c("code", "credits")],
-      by = "code", all.x = TRUE, sort = FALSE
-    ) -> df
-
-
-    if (anyNA(df$credits)) {
-      missing <- df$code[is.na(df$credits)]
-      stop(sprintf("Missing credits in catalog for: %s", paste(missing, collapse = ", ")))
-    }
-
-    # enumerate minimal combos that reach at least N credits
-    idxs <- seq_len(nrow(df))
-    minimal_combos <- list()
-
-    # kind of a brute force method for this
-    is_minimal <- function(indices) {
-      total <- sum(df$credits[indices])
-      if (total < N) return(FALSE)
-      # minimal: removing any single course drops total below N
-      all(total - df$credits[indices] < N)
-    }
-
-    # iterate by combination size; stop early once size grows large and no more minimal sets possible
-    for (k in 1:nrow(df)) {
-      cmb <- utils::combn(idxs, k, simplify = FALSE)
-      for (sset in cmb) {
-        if (is_minimal(sset)) {
-          minimal_combos[[length(minimal_combos) + 1]] <- sset
-        }
-      }
-    }
-
-    K <- length(minimal_combos)
-    w <- setNames(numeric(nrow(df)), df$code)
-    if (K == 0)  {
-      return(data.frame( Course = df$code,
-                         Weight = as.numeric(w),
-                         row.names = NULL))
-    }
-
-    # modify by weighing by number of groups (K)
-    per_combo <- 1 / K
-    for (sset in minimal_combos) {
-      w[df$code[sset]] <- w[df$code[sset]] + per_combo
-    }
-
-    return ( data.frame( Course = names(w),
-                         Weight = as.numeric(w),
-                         row.names = NULL)
-    )
-  }
-
-
-
-  ## Check the passed
+  #  Use the external function for this that implements a
+  #  Monte Carlo approximation when it gets complex.
 
 
   ######################################################
@@ -144,7 +69,7 @@ course_weight <- function( x, courses ) {
     if (is.null(courses) || !all(c("code","credits") %in% names(courses))) {
       stop("For [Ncred], supply courses with columns: code, credits.")
     }
-    return(.weights_select_n_credits(s, courses))
+    return(weights_select_n_credits(s, courses))
   }
 
   # Next Hardest Case: choose-N using [N] markers between items

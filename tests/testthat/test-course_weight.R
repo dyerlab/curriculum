@@ -50,12 +50,24 @@ test_that("testing weights", {
   # each gets N/M = 3/5 = 0.6
 
   # Select ≥ N credits via [Ncred] (needs catalog_df)
-  expect_equal( course_weight("CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201", courses ),
+  wts <- course_weight( "CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201",
+                        courses )
+  expect_equal( wts,
                 data.frame( Course = c("CHEM101",
                                        "CHEM102",
                                        "PHYS101",
                                        "MATH201",
                                        "ENGL201"),
                             Weight = 0.4 ) )
+
+  wts2 <- weights_select_n_credits("CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201",
+                                   courses)
+  expect_equal( wts, wts2 )
+
+  wts3 <- weights_select_n_credits("CHEM101[6cred]CHEM102[6cred]PHYS101[6cred]MATH201[6cred]ENGL201",
+                                   courses,
+                                   max_enum = 3 )
+
+  expect_true( mean( wts$Weight - wts3$Weight) < 0.0001 )
 
 })
